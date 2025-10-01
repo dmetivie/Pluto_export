@@ -1,91 +1,22 @@
-name: Export HTML Files to GitHub Pages
+name: Deploy HTML to GitHub Pages
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  contents: write
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Prepare public folder
-        run: |
-          mkdir -p public
-          
-          # Copy all HTML files from html folder while preserving folder structure
-          if [ -d "html" ]; then
-            find html -type f -name "*.html" -exec cp --parents {} public/ \;
-          fi
-          
-          # Copy all *_files folders (for assets like CSS, JS, images)
-          find . -type d -name "*_files" | while read dir; do
-            if [[ "$dir" == ./html/* ]] || [[ "$dir" == html/* ]]; then
-              mkdir -p "public/$(dirname "$dir")"
-              cp -r "$dir" "public/$(dirname "$dir")"
-            fi
-          done
-          
-          # If no index.html exists in public root, create a simple directory listing
-          if [ ! -f "public/index.html" ] && [ -d "public/html" ]; then
-            cat > public/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <title>HTML Files</title>
-              <style>
-                  body { font-family: Arial, sans-serif; margin: 40px; }
-                  h1 { color: #333; }
-                  ul { list-style-type: none; padding: 0; }
-                  li { margin: 10px 0; }
-                  a { text-decoration: none; color: #0066cc; }
-                  a:hover { text-decoration: underline; }
-              </style>
-          </head>
-          <body>
-              <h1>Available HTML Files</h1>
-              <ul>
-          EOF
-            find public/html -name "*.html" -type f | sort | while read file; do
-              # Remove public/ prefix and create relative link
-              link="${file#public/}"
-              filename=$(basename "$file" .html)
-              echo "                  <li><a href=\"$link\">$filename</a></li>" >> public/index.html
-            done
-            echo "              </ul>" >> public/index.html
-            echo "          </body>" >> public/index.html
-            echo "          </html>" >> public/index.html
-          fi
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './public'
-
+        
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./html
