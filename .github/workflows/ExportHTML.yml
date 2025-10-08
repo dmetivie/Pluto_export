@@ -4,9 +4,18 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'html/**'
+      - 'Bayesian_ODE_fermantation/**'
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+# Prevent conflicts with Pluto export
+concurrency:
+  group: github-pages-deploy
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -14,6 +23,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        
+      - name: Prepare combined HTML folder
+        run: |
+          mkdir -p html
+          # Copy html folder contents to html root
+          if [ -d "html" ]; then
+            cp -r html/* html/
+          fi
+          # Copy Bayesian_ODE_fermantation folder to html
+          if [ -d "Bayesian_ODE_fermantation" ]; then
+            cp -r Bayesian_ODE_fermantation html/
+          fi
         
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
