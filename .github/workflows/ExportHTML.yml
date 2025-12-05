@@ -7,6 +7,7 @@ on:
     paths:
       - 'html/**'
       - 'Bayesian_ODE_fermantation/**'
+      - 'SWG_coding_challenges/**'
   workflow_dispatch:
 
 permissions:
@@ -29,6 +30,10 @@ jobs:
           # Copy Bayesian_ODE_fermantation folder to html
           if [ -d "Bayesian_ODE_fermantation" ]; then
             cp -r Bayesian_ODE_fermantation html/
+          fi
+          # Copy SWG_coding_challenges folder to html
+          if [ -d "SWG_coding_challenges" ]; then
+            cp -r SWG_coding_challenges html/
           fi
         
       - name: Deploy to GitHub Pages

@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="David Métivier">
+<meta name="dcterms.date" content="2025-12-05">
+
+<title>Coding Stochastic Weather Generators: Challenges and Perspectives</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="Talk_DM_quarto_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Talk_DM_quarto_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Talk_DM_quarto_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Talk_DM_quarto_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="Talk_DM_quarto_files/libs/quarto-html/popper.min.js"></script>
+<script src="Talk_DM_quarto_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Talk_DM_quarto_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Talk_DM_quarto_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Talk_DM_quarto_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Talk_DM_quarto_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Talk_DM_quarto_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Talk_DM_quarto_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#benchmarking-hmm-simulation-across-languages" id="toc-benchmarking-hmm-simulation-across-languages" class="nav-link active" data-scroll-target="#benchmarking-hmm-simulation-across-languages">Benchmarking HMM Simulation across languages</a>
+  <ul class="collapse">
+  <li><a href="#julia-version" id="toc-julia-version" class="nav-link" data-scroll-target="#julia-version">Julia Version</a></li>
+  <li><a href="#r-version" id="toc-r-version" class="nav-link" data-scroll-target="#r-version">R Version</a></li>
+  <li><a href="#python-version" id="toc-python-version" class="nav-link" data-scroll-target="#python-version">Python Version</a></li>
+  <li><a href="#c-version-called-from-julia" id="toc-c-version-called-from-julia" class="nav-link" data-scroll-target="#c-version-called-from-julia">C Version (called from Julia)</a></li>
+  <li><a href="#benchmark-setup" id="toc-benchmark-setup" class="nav-link" data-scroll-target="#benchmark-setup">Benchmark Setup</a>
+  <ul class="collapse">
+  <li><a href="#julia-benchmark" id="toc-julia-benchmark" class="nav-link" data-scroll-target="#julia-benchmark">Julia Benchmark</a></li>
+  <li><a href="#pass-parameters-to-r" id="toc-pass-parameters-to-r" class="nav-link" data-scroll-target="#pass-parameters-to-r">Pass parameters to R</a></li>
+  <li><a href="#r-benchmark" id="toc-r-benchmark" class="nav-link" data-scroll-target="#r-benchmark">R Benchmark</a></li>
+  <li><a href="#c-benchmark" id="toc-c-benchmark" class="nav-link" data-scroll-target="#c-benchmark">C Benchmark</a></li>
+  </ul></li>
+  <li><a href="#results-summary" id="toc-results-summary" class="nav-link" data-scroll-target="#results-summary">Results Summary</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key Takeaways</a></li>
+  </ul></li>
+  <li><a href="#fitting-gaussian-random-fields-with-matérn-covariance" id="toc-fitting-gaussian-random-fields-with-matérn-covariance" class="nav-link" data-scroll-target="#fitting-gaussian-random-fields-with-matérn-covariance">Fitting Gaussian Random Fields with Matérn Covariance</a>
+  <ul class="collapse">
+  <li><a href="#mathematical-setup" id="toc-mathematical-setup" class="nav-link" data-scroll-target="#mathematical-setup">Mathematical Setup</a>
+  <ul class="collapse">
+  <li><a href="#log-likelihood" id="toc-log-likelihood" class="nav-link" data-scroll-target="#log-likelihood">Log-Likelihood</a></li>
+  </ul></li>
+  <li><a href="#set-up" id="toc-set-up" class="nav-link" data-scroll-target="#set-up">Set up</a></li>
+  <li><a href="#matérn-covariance-function" id="toc-matérn-covariance-function" class="nav-link" data-scroll-target="#matérn-covariance-function">Matérn Covariance Function</a></li>
+  <li><a href="#fixed-variance-sigma-1-case" id="toc-fixed-variance-sigma-1-case" class="nav-link" data-scroll-target="#fixed-variance-sigma-1-case">Fixed variance <span class="math inline">\(\sigma = 1\)</span> case</a>
+  <ul class="collapse">
+  <li><a href="#data-generation" id="toc-data-generation" class="nav-link" data-scroll-target="#data-generation">Data Generation</a></li>
+  <li><a href="#negative-log-likelihood" id="toc-negative-log-likelihood" class="nav-link" data-scroll-target="#negative-log-likelihood">Negative Log-Likelihood</a></li>
+  <li><a href="#parameter-estimation" id="toc-parameter-estimation" class="nav-link" data-scroll-target="#parameter-estimation">Parameter Estimation</a></li>
+  </ul></li>
+  <li><a href="#optimization-results" id="toc-optimization-results" class="nav-link" data-scroll-target="#optimization-results">Optimization Results</a>
+  <ul class="collapse">
+  <li><a href="#results-summary-1" id="toc-results-summary-1" class="nav-link" data-scroll-target="#results-summary-1">Results Summary</a></li>
+  </ul></li>
+  <li><a href="#free-variance-parameter-sigma" id="toc-free-variance-parameter-sigma" class="nav-link" data-scroll-target="#free-variance-parameter-sigma">Free variance parameter <span class="math inline">\(\sigma\)</span></a>
+  <ul class="collapse">
+  <li><a href="#data-generation-1" id="toc-data-generation-1" class="nav-link" data-scroll-target="#data-generation-1">Data Generation</a></li>
+  <li><a href="#negative-log-likelihood-1" id="toc-negative-log-likelihood-1" class="nav-link" data-scroll-target="#negative-log-likelihood-1">Negative Log-Likelihood</a></li>
+  <li><a href="#parameter-estimation-1" id="toc-parameter-estimation-1" class="nav-link" data-scroll-target="#parameter-estimation-1">Parameter Estimation</a></li>
+  </ul></li>
+  <li><a href="#optimization-results-1" id="toc-optimization-results-1" class="nav-link" data-scroll-target="#optimization-results-1">Optimization Results</a>
+  <ul class="collapse">
+  <li><a href="#results-summary-2" id="toc-results-summary-2" class="nav-link" data-scroll-target="#results-summary-2">Results Summary</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul></li>
+  <li><a href="#julia-computer-and-packages-settings" id="toc-julia-computer-and-packages-settings" class="nav-link" data-scroll-target="#julia-computer-and-packages-settings">Julia, Computer and Packages settings</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Coding Stochastic Weather Generators: Challenges and Perspectives</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>David Métivier </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 5, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The notebook is the companion to the talk <a href="https://swgen2025.sciencesconf.org/resource/page/id/21">Coding Stochastic Weather Generators: Challenges and Perspectives</a> given at the <a href="https://swgen2025.sciencesconf.org/" data-preview-link="true">SWGEN 2025 - Conference on Stochastic Weather Generators</a>. <iframe src="https://swgen2025.sciencesconf.org/" style="
+                width: 100%;
+            "> </iframe></p>
+<p>It showcases two challenges encountered when developing Stochastic Weather Generators (SWGs):</p>
+<ul>
+<li>Simulating SWGs efficiently, through a benchmark of HMM simulation in Julia, R, (Python) and C. It uses LLMs to generate the code in each language to mimic what a typical student/scientist might write.</li>
+<li>Fitting SWGs. It uses a Matérn Gaussian Random Field (GRF) as a running example to illustrate parameter estimation via gradient-based optimization with automatic differentiation, finite difference and gradient free methods e.g.&nbsp;Nelder-Mead.</li>
+</ul>
+<div id="2" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cd</span>(<span class="pp">@__DIR__</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">Pkg</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">Pkg</span>.<span class="fu">activate</span>(<span class="st">"."</span>);</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">PrettyTables</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-green-fg ansi-bold">  Activating</span> project at `C:\Users\metivier\work_David\presentation\2025-12-02_SWG_conference\code`
+</pre>
+</div>
+</div>
+</div>
+<div id="4" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import PythonCall #if you want to test Python version</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">RCall</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="benchmarking-hmm-simulation-across-languages" class="level1">
+<h1>Benchmarking HMM Simulation across languages</h1>
+<p>All implementations have been generated by a LLM. All versions could be further optimized, but the goal here is to illustrate typical performance differences “out of the box”. We will illustrate with a simple Hidden Markov Model (HMM) with 4 states and 12-dimensional multivariate normal emissions.</p>
+<section id="julia-version" class="level2">
+<h2 class="anchored" data-anchor-id="julia-version">Julia Version</h2>
+<p>In the Julia version, we use <code>Distributions.jl</code> for an arbitrary distribution interface. Thanks to Julia’s multiple dispatch, switching to other emission distributions (e.g., Poisson, Gamma) is straightforward.</p>
+<div id="6" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span>, <span class="bu">LinearAlgebra</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rand_HMM</span>(Q, dist, N)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    Z <span class="op">=</span> <span class="fu">zeros</span>(<span class="dt">Int</span>, N)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">length</span>(dist[<span class="fl">1</span>])  <span class="co"># dimension of observations</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    Y <span class="op">=</span> <span class="fu">zeros</span>(d, N)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    Z[<span class="fl">1</span>] <span class="op">=</span> <span class="fl">1</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    Y[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">=</span> <span class="fu">rand</span>(dist[Z[<span class="fl">1</span>]])</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span>N</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        Z[t] <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Categorical</span>(Q[Z[t<span class="op">-</span><span class="fl">1</span>], <span class="op">:</span>]))</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        Y[<span class="op">:</span>, t] <span class="op">=</span> <span class="fu">rand</span>(dist[Z[t]])</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Z, Y</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>rand_HMM (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="r-version" class="level2">
+<h2 class="anchored" data-anchor-id="r-version">R Version</h2>
+<p>In the R version, we use the <code>mvtnorm</code> package for multivariate normal sampling. Compared to the Julia version above, the MvNormal distribution has to be hard-coded.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mvtnorm)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>rand_HMM <span class="ot">&lt;-</span> <span class="cf">function</span>(Q, means_list, Sigma_list, N) {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    n_states <span class="ot">&lt;-</span> <span class="fu">nrow</span>(Q)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> <span class="fu">length</span>(means_list[[<span class="dv">1</span>]])  <span class="co"># dimension</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    Z <span class="ot">&lt;-</span> <span class="fu">integer</span>(N)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    Y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> d, <span class="at">ncol =</span> N)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    Z[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    Y[, <span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">1</span>, <span class="at">mean =</span> means_list[[Z[<span class="dv">1</span>]]], <span class="at">sigma =</span> Sigma_list[[Z[<span class="dv">1</span>]]])</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>N) {</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        Z[t] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n_states, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> Q[Z[t<span class="dv">-1</span>], ])</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        Y[, t] <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">1</span>, <span class="at">mean =</span> means_list[[Z[t]]], <span class="at">sigma =</span> Sigma_list[[Z[t]]])</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">Z =</span> Z, <span class="at">Y =</span> Y))</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>};</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="8" class="cell" data-execution_count="1">
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>RCall.jl: Warning: package 'mvtnorm' was built under R version 4.4.2
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ RCall C:\Users\metivier\.julia\packages\RCall\HIJsY\src\io.jl:171</span>
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>RCall.RFunction{RCall.RObject{RCall.ClosSxp}}(RCall.RObject{RCall.ClosSxp}
+function (Q, means_list, Sigma_list, N) 
+{
+    n_states &lt;- nrow(Q)
+    d &lt;- length(means_list[[1]])
+    Z &lt;- integer(N)
+    Y &lt;- matrix(0, nrow = d, ncol = N)
+    Z[1] &lt;- 1
+    Y[, 1] &lt;- rmvnorm(1, mean = means_list[[Z[1]]], sigma = Sigma_list[[Z[1]]])
+    for (t in 2:N) {
+        Z[t] &lt;- sample(1:n_states, size = 1, prob = Q[Z[t - 1], 
+            ])
+        Y[, t] &lt;- rmvnorm(1, mean = means_list[[Z[t]]], sigma = Sigma_list[[Z[t]]])
+    }
+    return(list(Z = Z, Y = Y))
+}
+)</code></pre>
+</div>
+</div>
+</section>
+<section id="python-version" class="level2">
+<h2 class="anchored" data-anchor-id="python-version">Python Version</h2>
+<p>The Python version also has to hard-code the MvNormal distribution. It was not tested because Python is not installed on my computer.</p>
+<div id="10" class="cell" data-execution_count="0">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">numpy</span> as np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>def <span class="fu">rand_HMM</span>(Q, means_list, Sigma_list, N)<span class="op">:</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    n_states <span class="op">=</span> <span class="fu">len</span>(Q)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">len</span>(means_list[<span class="fl">0</span>])  <span class="co"># dimension</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    Z <span class="op">=</span> np.<span class="fu">zeros</span>(N, dtype<span class="op">=</span>int)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    Y <span class="op">=</span> np.<span class="fu">zeros</span>((d, N))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    Z[<span class="fl">0</span>] <span class="op">=</span> <span class="fl">0</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    Y[<span class="op">:</span>, <span class="fl">0</span>] <span class="op">=</span> np.random.<span class="fu">multivariate_normal</span>(means_list[Z[<span class="fl">0</span>]], Sigma_list[Z[<span class="fl">0</span>]])</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="fu">range</span>(<span class="fl">1</span>, N)<span class="op">:</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        Z[t] <span class="op">=</span> np.random.<span class="fu">choice</span>(n_states, p<span class="op">=</span>Q[Z[t<span class="op">-</span><span class="fl">1</span>], <span class="op">:</span>])</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        Y[<span class="op">:</span>, t] <span class="op">=</span> np.random.<span class="fu">multivariate_normal</span>(means_list[Z[t]], Sigma_list[Z[t]])</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Z, Y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="c-version-called-from-julia" class="level2">
+<h2 class="anchored" data-anchor-id="c-version-called-from-julia">C Version (called from Julia)</h2>
+<p>Here is the C code generated by the LLM on the first try. It performs manual Cholesky decomposition and Box-Muller sampling of standard normals.</p>
+<div id="12" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Libdl</span> <span class="co"># Dynamic Linker to find path for C</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><strong>The C code is folded below</strong>.</p>
+<div id="14" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>C_code_v1 <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">#include &lt;stddef.h&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">#include &lt;stdlib.h&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">#include &lt;math.h&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="st">#include &lt;string.h&gt;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="st">// Cholesky decomposition (simple version, assumes positive definite)</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="st">void cholesky(double *A, double *L, size_t d) {</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="st">    memset(L, 0, d * d * sizeof(double));</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="st">    for (size_t i = 0; i &lt; d; i++) {</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="st">        for (size_t j = 0; j &lt;= i; j++) {</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="st">            double sum = 0.0;</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="st">            for (size_t k = 0; k &lt; j; k++) {</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="st">                sum += L[i * d + k] * L[j * d + k];</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="st">            }</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="st">            if (i == j) {</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="st">                L[i * d + j] = sqrt(A[i * d + i] - sum);</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="st">            } else {</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="st">                L[i * d + j] = (A[i * d + j] - sum) / L[j * d + j];</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="st">            }</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="st">        }</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="st">void rand_HMM_c_v1(size_t N, size_t d, double *Q, size_t n_states, </span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="st">                double *means, double *Sigmas, </span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="st">                int *Z, double *Y, unsigned int seed) {</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="st">    srand(seed);</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="st">    // Precompute Cholesky decompositions</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="st">    double *L_all = (double *)malloc(n_states * d * d * sizeof(double));</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="st">    for (size_t s = 0; s &lt; n_states; s++) {</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="st">        cholesky(&amp;Sigmas[s * d * d], &amp;L_all[s * d * d], d);</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="st">    Z[0] = 0;</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="st">    // Sample first observation</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="st">    for (size_t j = 0; j &lt; d; j++) {</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="st">        double z = 0.0;</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="st">        for (size_t k = 0; k &lt; d; k++) {</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="st">            double u1 = (double)rand() / RAND_MAX;</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="st">            double u2 = (double)rand() / RAND_MAX;</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="st">            double std_normal = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="st">            z += L_all[Z[0] * d * d + j * d + k] * std_normal;</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="st">        }</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="st">        Y[j * N + 0] = means[Z[0] * d + j] + z;</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="st">    for (size_t t = 1; t &lt; N; t++) {</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a><span class="st">        // Sample next state</span></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="st">        double r = (double)rand() / RAND_MAX;</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="st">        double cum_prob = 0.0;</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="st">        for (size_t s = 0; s &lt; n_states; s++) {</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="st">            cum_prob += Q[Z[t-1] * n_states + s];</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a><span class="st">            if (r &lt;= cum_prob) {</span></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="st">                Z[t] = s;</span></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a><span class="st">                break;</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="st">            }</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="st">        }</span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="st">        </span></span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="st">        // Sample multivariate normal observation</span></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="st">        for (size_t j = 0; j &lt; d; j++) {</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="st">            double z = 0.0;</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a><span class="st">            for (size_t k = 0; k &lt; d; k++) {</span></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="st">                double u1 = (double)rand() / RAND_MAX;</span></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a><span class="st">                double u2 = (double)rand() / RAND_MAX;</span></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a><span class="st">                double std_normal = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);</span></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a><span class="st">                z += L_all[Z[t] * d * d + j * d + k] * std_normal;</span></span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="st">            }</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a><span class="st">            Y[j * N + t] = means[Z[t] * d + j] + z;</span></span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a><span class="st">        }</span></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="st">    free(L_all);</span></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="ansi-escaped-output">
+<pre>"#include &lt;stddef.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;math.h&gt;\n#include &lt;string.h&gt;\n\n// Cholesky decomposition (simple version, assumes positive definite)\nvoid cholesky(double *A, double *L, size_t d) {\n    memset(L, 0, d * d * sizeof(double));\n    for (size_t i = 0; i &lt; d; i++) {\n   "<span class="ansi-bright-yellow-fg ansi-bold"> ⋯ 1872 bytes ⋯ </span>"double)rand() / RAND_MAX;\n                double std_normal = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);\n                z += L_all[Z[t] * d * d + j * d + k] * std_normal;\n            }\n            Y[j * N + t] = means[Z[t] * d + j] + z;\n        }\n    }\n    \n    free(L_all);\n}\n"</pre>
+</div>
+</div>
+</div>
+<p>The Julia wrapper to compile and call the C function:</p>
+<div id="16" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> Clib_path_v1 <span class="op">=</span> <span class="fu">tempname</span>()</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">open</span>(<span class="ss">`gcc -fPIC -O3 -ffast-math -msse3 -xc -shared -o $(Clib_path_v1 * "." * Libdl.dlext) -`</span>, <span class="st">"w"</span>) <span class="cf">do</span> f</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(f, C_code_v1)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">c_rand_HMM_v1</span>(Q<span class="op">::</span><span class="dt">Matrix{Float64}</span>, means<span class="op">::</span><span class="dt">Vector{Vector{Float64}}</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    Sigmas<span class="op">::</span><span class="dt">Vector{Matrix{Float64}}</span>, N<span class="op">::</span><span class="dt">Int</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    n_states <span class="op">=</span> <span class="fu">size</span>(Q, <span class="fl">1</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">length</span>(means[<span class="fl">1</span>])</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    Z <span class="op">=</span> <span class="fu">zeros</span>(<span class="dt">Int32</span>, N)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    Y <span class="op">=</span> <span class="fu">zeros</span>(<span class="dt">Float64</span>, d, N)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Flatten means and Sigmas for C</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    means_flat <span class="op">=</span> <span class="fu">reduce</span>(vcat, means)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    Sigmas_flat <span class="op">=</span> <span class="fu">reduce</span>(vcat, [<span class="fu">vec</span>(Sigmas[s]<span class="ch">') for s in 1:n_states])</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    seed <span class="op">=</span> <span class="fu">rand</span>(<span class="dt">UInt32</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ccall</span>((<span class="st">"rand_HMM_c_v1"</span>, Clib_path_v1), Cvoid,</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">Csize_t</span>, <span class="dt">Csize_t</span>, <span class="dt">Ptr</span>{<span class="dt">Float64</span>}, <span class="dt">Csize_t</span>, <span class="dt">Ptr</span>{<span class="dt">Float64</span>}, <span class="dt">Ptr</span>{<span class="dt">Float64</span>},</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            <span class="dt">Ptr</span>{<span class="dt">Int32</span>}, <span class="dt">Ptr</span>{<span class="dt">Float64</span>}, <span class="dt">UInt32</span>),</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>        N, d, Q, n_states, means_flat, Sigmas_flat, Z, Y, seed)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    return Z, Y</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>c_rand_HMM_v1 (generic function with 1 method)</code></pre>
+</div>
+</div>
+<p>Here is another version assuming that the Cholesky factors of the covariance matrices are precomputed in Julia and passed to C, along with standard normal random variables.</p>
+<p><strong>The C code is folded below</strong>.</p>
+<div id="18" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>C_code_v2 <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">#include &lt;stddef.h&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">#include &lt;stdlib.h&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">#include &lt;string.h&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="st">// rand_HMM_c: assumes Julia provides L_all (Cholesky factors) and E (standard normals)</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="st">// Q: n_states x n_states row-stochastic transition matrix</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="st">// means: n_states x d means (flattened row-major per state)</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="st">// L_all: n_states x d x d lower-triangular Cholesky factors (flattened)</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="st">// E: d x N matrix of standard normals (flattened column-major as passed from Julia)</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="st">void rand_HMM_c_v2(size_t N, size_t d, double *Q, size_t n_states,</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="st">                double *means, double *L_all, double *E,</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="st">                int *Z, double *Y, unsigned int seed) {</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="st">    // Simple LCG for reproducible state sampling (optional: srand)</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="st">    srand(seed);</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="st">    // Initial state</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="st">    Z[0] = 0;</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="st">    // First observation: y = μ + L * e</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="st">    for (size_t j = 0; j &lt; d; j++) {</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="st">        double z = 0.0;</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="st">        for (size_t k = 0; k &lt; d; k++) {</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="st">            double e = E[k * N + 0];</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="st">            z += L_all[Z[0] * d * d + j * d + k] * e;</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="st">        }</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="st">        Y[j * N + 0] = means[Z[0] * d + j] + z;</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="st">    for (size_t t = 1; t &lt; N; t++) {</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="st">        // Sample next state from Q[Z[t-1], :]</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="st">        double r = (double)rand() / RAND_MAX;</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="st">        double cum_prob = 0.0;</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="st">        for (size_t s = 0; s &lt; n_states; s++) {</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="st">            cum_prob += Q[Z[t-1] * n_states + s];</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="st">            if (r &lt;= cum_prob) {</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="st">                Z[t] = s;</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="st">                break;</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="st">            }</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a><span class="st">        }</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="st">        // Observation: y = μ + L * e</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="st">        for (size_t j = 0; j &lt; d; j++) {</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="st">            double z = 0.0;</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="st">            for (size_t k = 0; k &lt; d; k++) {</span></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a><span class="st">                double e = E[k * N + t];</span></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="st">                z += L_all[Z[t] * d * d + j * d + k] * e;</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="st">            }</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="st">            Y[j * N + t] = means[Z[t] * d + j] + z;</span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="st">        }</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="ansi-escaped-output">
+<pre>"#include &lt;stddef.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n\n// rand_HMM_c: assumes Julia provides L_all (Cholesky factors) and E (standard normals)\n// Q: n_states x n_states row-stochastic transition matrix\n// means: n_states x d means (flattened row-major per state)\n// L_all"<span class="ansi-bright-yellow-fg ansi-bold"> ⋯ 1173 bytes ⋯ </span>"_t j = 0; j &lt; d; j++) {\n            double z = 0.0;\n            for (size_t k = 0; k &lt; d; k++) {\n                double e = E[k * N + t];\n                z += L_all[Z[t] * d * d + j * d + k] * e;\n            }\n            Y[j * N + t] = means[Z[t] * d + j] + z;\n        }\n    }\n}\n"</pre>
+</div>
+</div>
+</div>
+<div id="20" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> Clib_path_v2 <span class="op">=</span> <span class="fu">tempname</span>()</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">open</span>(<span class="ss">`gcc -fPIC -O3 -ffast-math -msse3 -xc -shared -o $(Clib_path_v2 * "." * Libdl.dlext) -`</span>, <span class="st">"w"</span>) <span class="cf">do</span> f</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(f, C_code_v2)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">c_rand_HMM_v2</span>(Q<span class="op">::</span><span class="dt">Matrix{Float64}</span>, means<span class="op">::</span><span class="dt">Vector{Vector{Float64}}</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    Sigmas<span class="op">::</span><span class="dt">Vector{Matrix{Float64}}</span>, N<span class="op">::</span><span class="dt">Int</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    n_states <span class="op">=</span> <span class="fu">size</span>(Q, <span class="fl">1</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">length</span>(means[<span class="fl">1</span>])</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    Z <span class="op">=</span> <span class="fu">zeros</span>(<span class="dt">Int32</span>, N)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    Y <span class="op">=</span> <span class="fu">zeros</span>(<span class="dt">Float64</span>, d, N)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Flatten means for C</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    means_flat <span class="op">=</span> <span class="fu">reduce</span>(vcat, means)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Precompute Cholesky factors in Julia and flatten for C</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    L_all <span class="op">=</span> <span class="fu">reduce</span>(vcat, [<span class="fu">vec</span>(<span class="fu">cholesky</span>(Sigmas[s]).L<span class="op">'</span>) for s <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_states])</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Generate standard normals in Julia (d x N) and flatten column-major</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    E <span class="op">=</span> <span class="fu">randn</span>(d, N)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    seed <span class="op">=</span> <span class="fu">rand</span>(<span class="dt">UInt32</span>)</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ccall</span>((<span class="st">"rand_HMM_c_v2"</span>, Clib_path_v2), Cvoid,</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">Csize_t</span>, <span class="dt">Csize_t</span>, <span class="dt">Ptr</span>{<span class="dt">Float64</span>}, <span class="dt">Csize_t</span>, <span class="dt">Ptr</span>{<span class="dt">Float64</span>}, <span class="dt">Ptr</span>{<span class="dt">Float64</span>}, <span class="dt">Ptr</span>{<span class="dt">Float64</span>},</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>            <span class="dt">Ptr</span>{<span class="dt">Int32</span>}, <span class="dt">Ptr</span>{<span class="dt">Float64</span>}, <span class="dt">UInt32</span>),</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>        N, d, Q, n_states, means_flat, L_all, E, Z, Y, seed)</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Z, Y</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>c_rand_HMM_v2 (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="benchmark-setup" class="level2">
+<h2 class="anchored" data-anchor-id="benchmark-setup">Benchmark Setup</h2>
+<p>Define a 4-state HMM with 12-dimensional multivariate normal emissions:</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">BenchmarkTools</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Transition matrix</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>Q <span class="op">=</span> [<span class="fl">0.7</span> <span class="fl">0.15</span> <span class="fl">0.10</span> <span class="fl">0.05</span>;</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.2</span> <span class="fl">0.6</span> <span class="fl">0.15</span> <span class="fl">0.05</span>;</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.1</span> <span class="fl">0.2</span> <span class="fl">0.6</span> <span class="fl">0.10</span>;</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.05</span> <span class="fl">0.1</span> <span class="fl">0.15</span> <span class="fl">0.7</span>]</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate parameters for 4 states, 12 dimensions</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="fl">12</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>n_states <span class="op">=</span> <span class="fl">4</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>means_vec <span class="op">=</span> [<span class="fu">randn</span>(d) <span class="op">.+</span> i for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_states]</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>Sigmas_vec <span class="op">=</span> [<span class="fu">Matrix</span>(<span class="fu">Diagonal</span>(<span class="fu">rand</span>(d) <span class="op">.+</span> <span class="fl">0.5</span>)) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_states]</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Julia version with Distributions.jl</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>dist <span class="op">=</span> [<span class="fu">MvNormal</span>(means_vec[i], Sigmas_vec[i]) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_states]</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="fl">10_000</span>  <span class="co"># 10k time steps ≃ 27 years of daily data</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>10000</code></pre>
+</div>
+</div>
+<section id="julia-benchmark" class="level3">
+<h3 class="anchored" data-anchor-id="julia-benchmark">Julia Benchmark</h3>
+<div id="24" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>time_julia <span class="op">=</span> <span class="pp">@belapsed</span> <span class="fu">rand_HMM</span>(Q, dist, N);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="pass-parameters-to-r" class="level3">
+<h3 class="anchored" data-anchor-id="pass-parameters-to-r">Pass parameters to R</h3>
+<div id="26" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>RCall.<span class="pp">@rput</span> Q</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>RCall.<span class="pp">@rput</span> N</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>RCall.<span class="pp">@rput</span> d</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>RCall.<span class="pp">@rput</span> n_states</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>RCall.<span class="pp">@rput</span> means_vec</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>RCall.<span class="pp">@rput</span> Sigmas_vec;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="r-benchmark" class="level3">
+<h3 class="anchored" data-anchor-id="r-benchmark">R Benchmark</h3>
+<div id="28" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>time_R <span class="op">=</span> <span class="pp">@belapsed</span> RCall.R<span class="st">"rand_HMM(Q, means_vec, Sigmas_vec, N)"</span>;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="c-benchmark" class="level3">
+<h3 class="anchored" data-anchor-id="c-benchmark">C Benchmark</h3>
+<div id="30" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>time_C_v1 <span class="op">=</span> <span class="pp">@belapsed</span> <span class="fu">c_rand_HMM_v1</span>(Q, means_vec, Sigmas_vec, N);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="32" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>time_C_v2 <span class="op">=</span> <span class="pp">@belapsed</span> <span class="fu">c_rand_HMM_v2</span>(Q, means_vec, Sigmas_vec, N);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="results-summary" class="level2">
+<h2 class="anchored" data-anchor-id="results-summary">Results Summary</h2>
+<div id="34" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>results_table <span class="op">=</span> [</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Julia (baseline)"</span> time_julia <span class="fl">1.0</span>;</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C v1"</span> time_C_v1 time_C_v1<span class="op">/</span>time_julia;</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C v2"</span> time_C_v2 time_C_v2<span class="op">/</span>time_julia;</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"R"</span> time_R time_R<span class="op">/</span>time_julia</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="fu">pretty_table</span>(results_table,</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    column_labels<span class="op">=</span>[<span class="st">"Language"</span>, <span class="st">"Time (s)"</span>, <span class="st">"Relative Speed"</span>], backend<span class="op">=:</span>html)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Language</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Time (s)</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Relative Speed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: right;">Julia (baseline)</td>
+<td style="text-align: right;">0.0030923</td>
+<td style="text-align: right;">1.0</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: right;">C v1</td>
+<td style="text-align: right;">0.130053</td>
+<td style="text-align: right;">42.0569</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: right;">C v2</td>
+<td style="text-align: right;">0.0010231</td>
+<td style="text-align: right;">0.330854</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: right;">R</td>
+<td style="text-align: right;">1.59686</td>
+<td style="text-align: right;">516.399</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key Takeaways</h2>
+<ol type="1">
+<li><p><strong>R loops are unavoidably slow</strong>: R is ~500× slower than Julia for this loop-heavy simulation. While vectorization helps for some operations, SWG simulations require sequential time-stepping that cannot be vectorized. Optimizing R code is limited. Typically one would try to parallelize with <code>mclapply</code> or rewrite bottlenecks in C/C++ via Rcpp, but this adds complexity and maintenance burden.</p></li>
+<li><p><strong>C is not always faster</strong>: Surprisingly, the original C implementation by the LLM is ~40× slower than Julia! This demonstrates that:</p>
+<ul>
+<li>Writing efficient C requires deep expertise (memory management, compiler flags, algorithm choices)</li>
+<li>Bad C code can easily be slower than high-level languages with good JIT compilers</li>
+<li>The complexity of C makes it unsuitable for rapid prototyping in scientific applications</li>
+</ul></li>
+<li><p><strong>Julia solves the two-language problem</strong>: Julia provides C-like performance with Python/R-like ease of use. No need to rewrite bottlenecks in a low-level language - the prototype <em>is</em> the production code.</p></li>
+</ol>
+</section>
+</section>
+<section id="fitting-gaussian-random-fields-with-matérn-covariance" class="level1">
+<h1>Fitting Gaussian Random Fields with Matérn Covariance</h1>
+<p>Maximum Likelihood Estimation is the most common method to fit SWGs to data. Typical workflows involve using a package or directly using the <code>optim</code> R function (that is used under the hood by many R packages). The default method is Nelder-Mead, a gradient-free optimization method. The second choice is the BFGS quasi-Newton method where the gradients are approximated with finite differences. Both approaches can be very slow and/or inaccurate for complex models with many parameters. See the <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim" data-preview-link="true">optim</a> documentation for more details.</p>
+<iframe src="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim" style="
+                width: 100%;
+            ">
+</iframe>
+<p><strong>R as well as native Python/Matlab lack automatic differentiation (AD) capabilities.</strong></p>
+<p>In Julia, the support of AD is automatic: almost any Julia code can be differentiated with Automatic Differentiation. Of course, Julia optimization packages also support finite differences and derivative-free methods.</p>
+<section id="mathematical-setup" class="level2">
+<h2 class="anchored" data-anchor-id="mathematical-setup">Mathematical Setup</h2>
+<p>We consider <span class="math inline">\(N\)</span> independent samples <span class="math inline">\(Y^{(1)}, \ldots, Y^{(N)}\)</span> from a spatial Gaussian Random Field (GRF) at <span class="math inline">\(d\)</span> locations, where each sample follows:</p>
+<p><span class="math display">\[
+Y^{(i)} \sim \mathcal{N}(0, \sigma^2 R(\nu, \rho))
+\]</span></p>
+<p>The correlation matrix <span class="math inline">\(R\)</span> has a <strong>Matérn structure</strong>:</p>
+<p><span class="math display">\[
+R_{jk} = \rho_{\text{Matérn}}(h_{jk}; \nu, \rho) = \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{h_{jk}}{\rho}\right)^\nu K_\nu\left(\frac{h_{jk}}{\rho}\right)
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(h_{jk}\)</span> is the Euclidean distance between locations <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span></li>
+<li><span class="math inline">\(\nu &gt; 0\)</span> is the <strong>smoothness parameter</strong> (higher <span class="math inline">\(\nu\)</span> = smoother fields)</li>
+<li><span class="math inline">\(\rho &gt; 0\)</span> is the <strong>range parameter</strong> (controls spatial correlation decay)</li>
+<li><span class="math inline">\(\sigma &gt; 0\)</span> is the <strong>variance parameter</strong> (controls overall variance)</li>
+<li><span class="math inline">\(K_\nu\)</span> is the modified Bessel function of the second kind</li>
+<li><span class="math inline">\(\Gamma\)</span> is the gamma function</li>
+</ul>
+<section id="log-likelihood" class="level3">
+<h3 class="anchored" data-anchor-id="log-likelihood">Log-Likelihood</h3>
+<p>For i.i.d. samples, the log-likelihood is:</p>
+<p><span class="math display">\[
+\ell(\nu, \rho) = -\frac{N}{2}\left[\log|R(\nu, \rho)| + d\log(2\pi)\right] - \frac{1}{2}\sum_{i=1}^{N} (Y^{(i)})^\top R(\nu, \rho)^{-1} Y^{(i)}
+\]</span></p>
+<p>We estimate <span class="math inline">\((\nu, \rho, \sigma)\)</span> by minimizing <span class="math inline">\(\ell\)</span> using gradient-based optimization with <strong>automatic differentiation</strong>.</p>
+</section>
+</section>
+<section id="set-up" class="level2">
+<h2 class="anchored" data-anchor-id="set-up">Set up</h2>
+<p>Generate synthetic data from a Matérn GRF with known parameters.</p>
+<div id="36" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GaussianRandomFields</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">BesselK</span>: _gamma, adbesselkxv</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distances</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Optimization</span>, <span class="bu">OptimizationOptimJL</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">FiniteDiff</span>, <span class="bu">ForwardDiff</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="38" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1234</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a d×d grid of 2D spatial locations</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="fl">15</span>  <span class="co"># number of spatial locations per dimension (total: d²)</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>x_pts <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, stop<span class="op">=</span><span class="fl">10</span>, length<span class="op">=</span>d)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>y_pts <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, stop<span class="op">=</span><span class="fl">10</span>, length<span class="op">=</span>d)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Build location matrix (d² × 2)</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>locs <span class="op">=</span> [(x, y) for x <span class="kw">in</span> x_pts, y <span class="kw">in</span> y_pts]</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>locs <span class="op">=</span> <span class="fu">hcat</span>([[loc[<span class="fl">1</span>], loc[<span class="fl">2</span>]] for loc <span class="kw">in</span> locs]<span class="op">...</span>)<span class="ch">'</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute pairwise distances</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> <span class="fu">pairwise</span>(<span class="fu">Euclidean</span>(), locs, dims<span class="op">=</span><span class="fl">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>225×225 Matrix{Float64}:
+  0.0        0.714286   1.42857   …  13.1708    13.6464    14.1421
+  0.714286   0.0        0.714286     12.7175    13.1708    13.6464
+  1.42857    0.714286   0.0          12.289     12.7175    13.1708
+  2.14286    1.42857    0.714286     11.8881    12.289     12.7175
+  2.85714    2.14286    1.42857      11.5175    11.8881    12.289
+  3.57143    2.85714    2.14286   …  11.1803    11.5175    11.8881
+  4.28571    3.57143    2.85714      10.8797    11.1803    11.5175
+  5.0        4.28571    3.57143      10.6186    10.8797    11.1803
+  5.71429    5.0        4.28571      10.4002    10.6186    10.8797
+  6.42857    5.71429    5.0          10.227     10.4002    10.6186
+  ⋮                               ⋱                        
+ 10.8797    10.6186    10.4002        4.28571    5.0        5.71429
+ 11.1803    10.8797    10.6186        3.57143    4.28571    5.0
+ 11.5175    11.1803    10.8797        2.85714    3.57143    4.28571
+ 11.8881    11.5175    11.1803        2.14286    2.85714    3.57143
+ 12.289     11.8881    11.5175    …   1.42857    2.14286    2.85714
+ 12.7175    12.289     11.8881        0.714286   1.42857    2.14286
+ 13.1708    12.7175    12.289         0.0        0.714286   1.42857
+ 13.6464    13.1708    12.7175        0.714286   0.0        0.714286
+ 14.1421    13.6464    13.1708        1.42857    0.714286   0.0</code></pre>
+</div>
+</div>
+</section>
+<section id="matérn-covariance-function" class="level2">
+<h2 class="anchored" data-anchor-id="matérn-covariance-function">Matérn Covariance Function</h2>
+<p>Define the Matérn correlation function with the <code>adbesselkxv</code> and <code>_gamma</code> functions from the <a href="https://github.com/cgeoga/BesselK.jl">BesselK.jl</a> package as they are AD-compatible:</p>
+<div id="40" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">cov_matérn</span>(h, ν)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">iszero</span>(h) <span class="op">&amp;&amp;</span> <span class="cf">return</span> <span class="fu">one</span>(h)  <span class="co"># Return type-stable 1</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fl">2</span><span class="op">^</span>(<span class="fl">1</span> <span class="op">-</span> ν) <span class="op">/</span> <span class="fu">_gamma</span>(ν) <span class="op">*</span> <span class="fu">adbesselkxv</span>(ν, h)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>cov_matérn (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="fixed-variance-sigma-1-case" class="level2">
+<h2 class="anchored" data-anchor-id="fixed-variance-sigma-1-case">Fixed variance <span class="math inline">\(\sigma = 1\)</span> case</h2>
+<section id="data-generation" class="level3">
+<h3 class="anchored" data-anchor-id="data-generation">Data Generation</h3>
+<p>Generate <span class="math inline">\(N\)</span> i.i.d. samples from a Matérn GRF</p>
+<div id="42" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>θ_true <span class="op">=</span> [<span class="fl">2.5</span>, <span class="fl">1.2</span>] <span class="co"># (ρ, ν)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>2-element Vector{Float64}:
+ 2.5
+ 1.2</code></pre>
+</div>
+</div>
+<div id="44" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>cov <span class="op">=</span> <span class="fu">CovarianceFunction</span>(<span class="fl">2</span>, <span class="fu">Matern</span>(θ_true[<span class="fl">1</span>], θ_true[<span class="fl">2</span>]))</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>grf <span class="op">=</span> <span class="fu">GaussianRandomField</span>(cov, GaussianRandomFields.<span class="fu">Cholesky</span>(), x_pts, y_pts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Gaussian random field with 2d Matérn covariance function (λ=2.5, ν=1.2, σ=1.0, p=2.0) on a 15×15 structured grid, using a Cholesky decomposition</code></pre>
+</div>
+</div>
+<div id="46" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="fl">700</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> [<span class="fu">sample</span>(grf) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N]</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Generated </span><span class="sc">$</span>N<span class="st"> samples on a </span><span class="sc">$</span>(d)<span class="st">×</span><span class="sc">$</span>(d)<span class="st"> grid (</span><span class="sc">$</span>(<span class="fu">size</span>(H,<span class="fl">1</span>))<span class="st"> locations)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Generated 700 samples on a 15×15 grid (225 locations)</code></pre>
+</div>
+</div>
+</section>
+<section id="negative-log-likelihood" class="level3">
+<h3 class="anchored" data-anchor-id="negative-log-likelihood">Negative Log-Likelihood</h3>
+<p>Implement the NLL using:</p>
+<div id="48" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nll</span>(u, p)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    ρ, ν <span class="op">=</span> u[<span class="fl">1</span>], u[<span class="fl">2</span>]</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    Y, H <span class="op">=</span> p[<span class="fl">1</span>], p[<span class="fl">2</span>]</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    N <span class="op">=</span> <span class="fu">length</span>(Y)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">size</span>(H, <span class="fl">1</span>)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Build correlation matrix R(ν, ρ) with broadcasting</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    R <span class="op">=</span> <span class="fu">cov_matérn</span>.(H <span class="op">/</span> ρ, ν)</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Cholesky decomposition (handles Σ⁻¹ and log|Σ| efficiently)</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>    Σ <span class="op">=</span> <span class="fu">cholesky!</span>(<span class="fu">Symmetric</span>(R))</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Negative log-likelihood:</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ℓ = (N/2)[log|R| + d·log(2π)] + (1/2)∑ᵢ yᵢᵀ R⁻¹ yᵢ</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>    ℓ <span class="op">=</span> N <span class="op">/</span> <span class="fl">2</span> <span class="op">*</span> (<span class="fu">logdet</span>(Σ) <span class="op">+</span> d <span class="op">*</span> <span class="fu">log</span>(<span class="fl">2</span>π)) <span class="op">+</span></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sum</span>(<span class="fu">dot</span>(<span class="fu">vec</span>(y), Σ <span class="op">\</span> <span class="fu">vec</span>(y)) <span class="cf">for</span> y <span class="kw">in</span> Y) <span class="op">/</span> <span class="fl">2</span></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ℓ</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>nll (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="parameter-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="parameter-estimation">Parameter Estimation</h3>
+<p>Compare optimization methods: <strong>Automatic Differentiation</strong> vs <strong>Finite Differences</strong> vs <strong>Derivative-Free</strong></p>
+<div id="50" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initial guess (true values: ρ=2.5, ν=1.2)</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>θ₀ <span class="op">=</span> [<span class="fl">5.2</span>, <span class="fl">0.5</span>]</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Automatic Differentiation (AD) - exact gradients</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>optf <span class="op">=</span> <span class="fu">OptimizationFunction</span>(nll, Optimization.<span class="fu">AutoForwardDiff</span>())</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>prob <span class="op">=</span> <span class="fu">OptimizationProblem</span>(optf, θ₀, [Y, H], lb<span class="op">=</span>[<span class="fl">0.0</span>, <span class="fl">0.0</span>], ub<span class="op">=</span>[<span class="cn">Inf</span>, <span class="cn">Inf</span>])</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Finite Differences (FD) - approximate gradients</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>optfFD <span class="op">=</span> <span class="fu">OptimizationFunction</span>(nll, Optimization.<span class="fu">AutoFiniteDiff</span>())</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>probFD <span class="op">=</span> <span class="fu">OptimizationProblem</span>(optfFD, θ₀, [Y, H], lb<span class="op">=</span>[<span class="fl">0.0</span>, <span class="fl">0.0</span>], ub<span class="op">=</span>[<span class="cn">Inf</span>, <span class="cn">Inf</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="ansi-escaped-output">
+<pre><span style="color:rgb(86,182,194)">OptimizationProblem</span>. In-place: <span style="color:rgb(86,182,194)">true</span>
+u0: 2-element Vector{Float64}:
+ 5.2
+ 0.5</pre>
+</div>
+</div>
+</div>
+<p>I discovered that Nelder-Mead uses one evaluation of gradient for some simplex stuff see <a href="https://julianlsolvers.github.io/Optim.jl/stable/algo/nelder_mead/#Nelder-Mead">here</a> and <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim">here</a>. So we use the Finite Differences version for consistency with the R version.</p>
+<p>To limit computation time, we limit the maximum number of iterations as Finite Differences is super slow. You can increase it to reach better convergence.</p>
+<div id="52" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>maxiters <span class="op">=</span> <span class="fl">400</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>400</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="optimization-results" class="level2">
+<h2 class="anchored" data-anchor-id="optimization-results">Optimization Results</h2>
+<div id="54" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>(solAD, timeAD) <span class="op">=</span> <span class="pp">@timed</span> <span class="fu">solve</span>(prob, <span class="fu">IPNewton</span>(), maxiters<span class="op">=</span>maxiters)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>solAD.stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>The selected optimization algorithm requires second order derivatives, but `SecondOrder` ADtype was not provided.
+<span class="ansi-yellow-fg ansi-bold">│ </span>        So a `SecondOrder` with ADTypes.AutoForwardDiff() for both inner and outer will be created, this can be suboptimal and not work in some cases so
+<span class="ansi-yellow-fg ansi-bold">│ </span>        an explicit `SecondOrder` ADtype is recommended.
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ OptimizationBase C:\Users\metivier\.julia\packages\OptimizationBase\R2xIG\src\cache.jl:51</span>
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>SciMLBase.OptimizationStats
+Number of iterations:                              29
+Time in seconds:                                   140.329000
+Number of function evaluations:                    74
+Number of gradient evaluations:                    74
+Number of hessian evaluations:                     29</code></pre>
+</div>
+</div>
+<div id="56" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>(solFD, timeFD) <span class="op">=</span> <span class="pp">@timed</span> <span class="fu">solve</span>(probFD, <span class="fu">IPNewton</span>(), maxiters<span class="op">=</span>maxiters)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>solFD.stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>The selected optimization algorithm requires second order derivatives, but `SecondOrder` ADtype was not provided.
+<span class="ansi-yellow-fg ansi-bold">│ </span>        So a `SecondOrder` with ADTypes.AutoFiniteDiff() for both inner and outer will be created, this can be suboptimal and not work in some cases so
+<span class="ansi-yellow-fg ansi-bold">│ </span>        an explicit `SecondOrder` ADtype is recommended.
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ OptimizationBase C:\Users\metivier\.julia\packages\OptimizationBase\R2xIG\src\cache.jl:51</span>
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>SciMLBase.OptimizationStats
+Number of iterations:                              400
+Time in seconds:                                   293.370000
+Number of function evaluations:                    529
+Number of gradient evaluations:                    529
+Number of hessian evaluations:                     401</code></pre>
+</div>
+</div>
+<div id="58" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>(solNoDiff, timeNoDiff) <span class="op">=</span> <span class="pp">@timed</span> <span class="fu">solve</span>(probFD, <span class="fu">NelderMead</span>(), maxiters<span class="op">=</span>maxiters)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>solNoDiff.stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>SciMLBase.OptimizationStats
+Number of iterations:                              5
+Time in seconds:                                   15.144000
+Number of function evaluations:                    487
+Number of gradient evaluations:                    1
+Number of hessian evaluations:                     0</code></pre>
+</div>
+</div>
+<section id="results-summary-1" class="level3">
+<h3 class="anchored" data-anchor-id="results-summary-1">Results Summary</h3>
+<div id="60" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>results_table <span class="op">=</span> [</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"True"</span> θ_true[<span class="fl">1</span>] θ_true[<span class="fl">2</span>] <span class="st">"N/A"</span>;</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"AD"</span> <span class="fu">round</span>(solAD.u[<span class="fl">1</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solAD.u[<span class="fl">2</span>], digits<span class="op">=</span><span class="fl">3</span>) timeAD;</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"FD"</span> <span class="fu">round</span>(solFD.u[<span class="fl">1</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solFD.u[<span class="fl">2</span>], digits<span class="op">=</span><span class="fl">3</span>) timeFD;</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"NM"</span> <span class="fu">round</span>(solNoDiff.u[<span class="fl">1</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solNoDiff.u[<span class="fl">2</span>], digits<span class="op">=</span><span class="fl">3</span>) timeNoDiff</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="fu">pretty_table</span>(results_table,</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>    column_labels<span class="op">=</span>[<span class="st">"Method"</span>, <span class="st">"ρ"</span>, <span class="st">"ν"</span>, <span class="st">"Time (s)"</span>], backend<span class="op">=:</span>html)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Method</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">ρ</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">ν</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Time (s)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: right;">True</td>
+<td style="text-align: right;">2.5</td>
+<td style="text-align: right;">1.2</td>
+<td style="text-align: right;">N/A</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: right;">AD</td>
+<td style="text-align: right;">2.516</td>
+<td style="text-align: right;">1.195</td>
+<td style="text-align: right;">143.399</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: right;">FD</td>
+<td style="text-align: right;">2.871</td>
+<td style="text-align: right;">1.118</td>
+<td style="text-align: right;">297.842</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: right;">NM</td>
+<td style="text-align: right;">2.516</td>
+<td style="text-align: right;">1.195</td>
+<td style="text-align: right;">15.9226</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="free-variance-parameter-sigma" class="level2">
+<h2 class="anchored" data-anchor-id="free-variance-parameter-sigma">Free variance parameter <span class="math inline">\(\sigma\)</span></h2>
+<section id="data-generation-1" class="level3">
+<h3 class="anchored" data-anchor-id="data-generation-1">Data Generation</h3>
+<div id="62" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>θσ_true <span class="op">=</span> [<span class="fl">2.5</span>, <span class="fl">1.2</span>, <span class="fl">4.0</span>] <span class="co"># (ρ, ν, σ)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>3-element Vector{Float64}:
+ 2.5
+ 1.2
+ 4.0</code></pre>
+</div>
+</div>
+<div id="64" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>covσ <span class="op">=</span> <span class="fu">CovarianceFunction</span>(<span class="fl">2</span>, <span class="fu">Matern</span>(θσ_true[<span class="fl">1</span>], θσ_true[<span class="fl">2</span>], σ<span class="op">=</span>θσ_true[<span class="fl">3</span>]))</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>grfσ <span class="op">=</span> <span class="fu">GaussianRandomField</span>(covσ, GaussianRandomFields.<span class="fu">Cholesky</span>(), x_pts, y_pts)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>Yσ <span class="op">=</span> [<span class="fu">sample</span>(grfσ) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>700-element Vector{Matrix{Float64}}:
+ [-2.908789397950098 -3.8131606954589463 … 2.1799794522902656 4.596670635099563; 0.11906230828325759 -1.1200414240148966 … 0.7310653607067716 3.2218717476072607; … ; -3.3298667384113565 -3.4485990712482915 … 1.851762239582804 0.33598070020734483; -3.5281571196689114 -2.469843084132078 … 2.0786003052783015 2.2067623466468334]
+ [-0.313092254671193 -0.6952943404963746 … 7.093191293580664 7.255686785741399; -3.04940693514618 -3.202361341070152 … 6.3909650094538275 6.578454974732634; … ; -4.477612774250883 -4.244753240458948 … 4.949807486617989 2.6337494394464143; -4.067743540401492 -3.4918743980425733 … 2.121380102158777 1.609712371730212]
+ [-0.08451936980921823 1.3443976005655083 … -0.47142832756923886 0.2625890895516912; 0.7750323392359102 3.1527001162621002 … 0.44974661369119606 0.16415799665088204; … ; -8.165703436450121 -8.813877348866782 … -3.1156279769047415 -0.3879050059615239; -7.554554583789133 -7.758913834321561 … -3.3778080532296975 -1.240276468606131]
+ [-5.676515966859646 -6.716685318367137 … 1.1369109918964289 3.2347819481159226; -5.895749134693372 -5.098952852195997 … 1.2606823402520817 3.686720551891458; … ; 3.5131749565860018 4.189357149735303 … -6.934798611064781 -4.662758977888864; 5.599097883613813 5.9553517953183706 … -4.8282843374871565 -3.3682827499020185]
+ [1.7339207170392155 2.322741455121328 … -8.127329784300995 -5.727244717650702; 2.085657998190487 1.8108420652039547 … -8.472794353242957 -6.491141320348742; … ; 5.213523793252757 3.376616624133374 … -3.3237930098913777 -2.06791067069522; 6.481376200083426 5.381115750848656 … -2.8116397062662832 -0.05224306321142902]
+ [-1.633560704076629 -0.3595365630862855 … -0.24969665672829425 -0.34394631395533665; -1.4779095730876675 -0.9413336061672843 … -2.0973063192688306 -2.016989620303522; … ; -1.386754134015919 -1.6217364408241104 … -1.8362684460254384 -1.1043748550866055; -0.9229258249564791 0.0392410697080412 … -3.299544916763974 -1.5806815955476854]
+ [-5.290246384521325 -4.5022009087722035 … -7.666662515900084 -5.984660828256332; -4.372175018547575 -3.8002572482946015 … -7.549476927796233 -5.734528976775111; … ; -4.672732410194486 -4.788264512294825 … 5.0552972364680615 5.51746250758299; -6.778288457511182 -6.326729073888694 … 4.925936375368744 5.416843346158407]
+ [-3.0832222044749904 -4.302480890420956 … 1.1941700367472539 0.6218192805152737; -1.336121120806356 -2.223844366280061 … 1.8840192198774357 1.5929577583256038; … ; -0.42063772223176654 -1.2150581056241614 … 1.4106669967056704 0.050247108332530876; 0.6177976934503271 0.0793484404884428 … 3.1293367349276053 1.881441216724007]
+ [-2.4546302654166614 -2.016642806126867 … -0.7019843958779142 -0.29714555390124786; -2.1951287727681925 -1.8126456819829178 … -0.7444362147916765 -0.15346935586833887; … ; -2.480543584657277 -3.2317242833242146 … 3.027928672397817 5.324174042677577; -3.0314321624627656 -4.373592980519557 … 2.507429939440178 2.798379151642449]
+ [4.78204397472337 2.4463424940950604 … 0.8210860973949246 0.23207574303935044; 5.7413773724474595 3.4747108943183544 … 1.9078907374287999 1.481235504196272; … ; -1.4097992333052762 -3.161642103908008 … 1.6329258061555523 4.486541843425547; -2.0954955820260173 -3.371506553563967 … 1.7525186624116396 2.7787361175836813]
+ ⋮
+ [2.526504307776522 -0.5847799761052339 … 0.29965532278756324 0.4240473963351052; -2.021392457653805 -2.648417948989092 … 0.917961973589297 0.28738887483136855; … ; 6.59707784165706 6.042459463855335 … 2.6017701942788856 3.2747496694198404; 5.309849811493078 5.204631071316478 … 2.576088218521617 3.1914362348104146]
+ [-0.44049596592253704 -1.9777331875924107 … 0.412011950200139 2.9056766799873466; 0.9038349644701564 -0.561041692044341 … -0.3618454049533446 1.3488068409579839; … ; 5.412064157780901 2.391218999855472 … -9.282943772912104 -9.233555804007667; 4.266229309591138 2.8374530505903968 … -9.425347389768108 -9.754728455949365]
+ [-0.28475469701010214 1.1001766540481925 … 1.600514853699297 2.7118075329270934; -0.5697853430646705 1.4401770090838288 … -0.6828174553503688 1.6657797982748135; … ; 3.7440139090116857 2.0768368409453264 … 5.396916300495214 5.129191480855952; 6.015021207004874 4.257866286559388 … 5.769484677895831 4.71061678311146]
+ [-3.188028190815699 -3.359640584677632 … 1.3557516107975274 -0.1388938388383145; -3.8710585453041375 -4.001455922305908 … 0.4343308250061231 -0.5233291343188942; … ; -3.967809264805045 -3.184588880537353 … 0.6489500382398137 1.0592860503183903; -2.3893513789524996 -0.859509260753168 … 0.9214782762785829 0.23437136986225815]
+ [-0.09670717025197507 -0.19189193937892765 … -0.4860045994573195 -0.1752761301483978; -1.4829104528641177 0.0025063582641504933 … 0.9999686829041503 0.1639107576190973; … ; 3.2668570795780245 5.716426108602874 … 1.8149671149761357 1.344971325398709; 1.8126088479126672 1.7850094922579074 … -0.27854407132346115 -0.40689749020303384]
+ [-5.822843100723238 -3.973250899903822 … -4.12918582209273 -2.6027512827605546; -6.602395251810106 -6.131332389022809 … -3.2096059155636265 -3.72348450736055; … ; -0.7785456273546474 -0.9186385412820087 … 8.263413235836842 7.030564212468362; -2.380483246214559 -2.4546152198065996 … 8.18636463419122 7.813930742438426]
+ [3.960708464997427 5.4964917833571585 … -1.304882317952616 -1.7013950196041603; 2.4827678410065404 4.5965405775169055 … -1.881955529462397 -1.6175246759169428; … ; 10.444819508881277 10.67813598858717 … -4.134015386176744 -4.035045443593478; 9.507305235402903 10.13729267232085 … -4.305964195395933 -5.568150978574627]
+ [-1.0823772157612597 1.105657976804282 … 8.311003893951643 6.428549247345561; 0.6840986172085235 2.85366358824699 … 8.301786420234777 6.214449730539613; … ; -2.1260710615001566 -4.501645010387021 … -4.0008100305918175 -2.9475338619153515; 0.46249287120664107 -1.7888746933039674 … -3.780282406516182 -1.9722418922947416]
+ [3.8484383176364076 5.44552172636197 … -0.7565132972602653 1.0855799275964333; 2.4396625814313637 4.271836880977826 … 0.8054201037994785 2.4563274869622727; … ; 5.463672975178838 5.6590107771176505 … 2.5074168712247427 0.7505902477446413; 5.029091961300201 5.238688979569602 … 3.222128418942532 3.2620639216563845]</code></pre>
+</div>
+</div>
+</section>
+<section id="negative-log-likelihood-1" class="level3">
+<h3 class="anchored" data-anchor-id="negative-log-likelihood-1">Negative Log-Likelihood</h3>
+<div id="66" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nllσ</span>(u, p)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    ρ, ν, σ <span class="op">=</span> u[<span class="fl">1</span>], u[<span class="fl">2</span>], u[<span class="fl">3</span>]</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    Y, H <span class="op">=</span> p[<span class="fl">1</span>], p[<span class="fl">2</span>]</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    N <span class="op">=</span> <span class="fu">length</span>(Y)</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">size</span>(H, <span class="fl">1</span>)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Build correlation matrix R(ν, ρ) with broadcasting</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>    R <span class="op">=</span> σ<span class="op">^</span><span class="fl">2</span> <span class="op">*</span> <span class="fu">cov_matérn</span>.(H <span class="op">/</span> ρ, ν)</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Cholesky decomposition (handles Σ⁻¹ and log|Σ| efficiently)</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>    Σ <span class="op">=</span> <span class="fu">cholesky!</span>(<span class="fu">Symmetric</span>(R))</span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Negative log-likelihood:</span></span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ℓ = (N/2)[log|R| + d·log(2π)] + (1/2)∑ᵢ yᵢᵀ R⁻¹ yᵢ</span></span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>    ℓ <span class="op">=</span> N <span class="op">/</span> <span class="fl">2</span> <span class="op">*</span> (<span class="fu">logdet</span>(Σ) <span class="op">+</span> d <span class="op">*</span> <span class="fu">log</span>(<span class="fl">2</span>π)) <span class="op">+</span></span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sum</span>(<span class="fu">dot</span>(<span class="fu">vec</span>(y), Σ <span class="op">\</span> <span class="fu">vec</span>(y)) <span class="cf">for</span> y <span class="kw">in</span> Y) <span class="op">/</span> <span class="fl">2</span></span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ℓ</span>
+<span id="cb50-19"><a href="#cb50-19" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>nllσ (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="parameter-estimation-1" class="level3">
+<h3 class="anchored" data-anchor-id="parameter-estimation-1">Parameter Estimation</h3>
+<p>Compare optimization methods: <strong>Automatic Differentiation</strong> vs <strong>Finite Differences</strong> vs <strong>Derivative-Free</strong></p>
+<div id="68" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initial guess (true values: ρ=2.5, ν=1.2, σ = 4.0)</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>θσ₀ <span class="op">=</span> [<span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>]</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="co"># With automatic differentiation</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>optfσ <span class="op">=</span> <span class="fu">OptimizationFunction</span>(nllσ, Optimization.<span class="fu">AutoForwardDiff</span>())</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>probσ <span class="op">=</span> <span class="fu">OptimizationProblem</span>(optfσ, θσ₀, [Yσ, H], lb<span class="op">=</span>[<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>], ub<span class="op">=</span>[<span class="cn">Inf</span>, <span class="cn">Inf</span>, <span class="cn">Inf</span>])</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a><span class="co"># With finite differences</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>optfσFD <span class="op">=</span> <span class="fu">OptimizationFunction</span>(nllσ, Optimization.<span class="fu">AutoFiniteDiff</span>())</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>probσFD <span class="op">=</span> <span class="fu">OptimizationProblem</span>(optfσFD, θσ₀, [Yσ, H], lb<span class="op">=</span>[<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>], ub<span class="op">=</span>[<span class="cn">Inf</span>, <span class="cn">Inf</span>, <span class="cn">Inf</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="ansi-escaped-output">
+<pre><span style="color:rgb(86,182,194)">OptimizationProblem</span>. In-place: <span style="color:rgb(86,182,194)">true</span>
+u0: 3-element Vector{Float64}:
+ 0.2
+ 0.5
+ 0.5</pre>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="optimization-results-1" class="level2">
+<h2 class="anchored" data-anchor-id="optimization-results-1">Optimization Results</h2>
+<div id="70" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>(solAD, timeAD) <span class="op">=</span> <span class="pp">@timed</span> <span class="fu">solve</span>(probσ, <span class="fu">IPNewton</span>(), maxiters<span class="op">=</span>maxiters)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>solAD.stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>The selected optimization algorithm requires second order derivatives, but `SecondOrder` ADtype was not provided.
+<span class="ansi-yellow-fg ansi-bold">│ </span>        So a `SecondOrder` with ADTypes.AutoForwardDiff() for both inner and outer will be created, this can be suboptimal and not work in some cases so
+<span class="ansi-yellow-fg ansi-bold">│ </span>        an explicit `SecondOrder` ADtype is recommended.
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ OptimizationBase C:\Users\metivier\.julia\packages\OptimizationBase\R2xIG\src\cache.jl:51</span>
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>SciMLBase.OptimizationStats
+Number of iterations:                              32
+Time in seconds:                                   64.361000
+Number of function evaluations:                    76
+Number of gradient evaluations:                    76
+Number of hessian evaluations:                     32</code></pre>
+</div>
+</div>
+<p>Since Finite Differences is very slow, we catch potential failures to converge within the iteration budget.</p>
+<div id="72" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>(solFD, timeFD) <span class="op">=</span> <span class="pp">@timed</span> <span class="cf">try</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">solve</span>(probσFD, <span class="fu">IPNewton</span>(), maxiters<span class="op">=</span>maxiters)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="cf">catch</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@warn</span> <span class="st">"The solve failed."</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    (u<span class="op">=</span>[<span class="cn">missing</span>, <span class="cn">missing</span>, <span class="cn">missing</span>], stats<span class="op">=</span><span class="cn">nothing</span>)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>solFD.stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>The selected optimization algorithm requires second order derivatives, but `SecondOrder` ADtype was not provided.
+<span class="ansi-yellow-fg ansi-bold">│ </span>        So a `SecondOrder` with ADTypes.AutoFiniteDiff() for both inner and outer will be created, this can be suboptimal and not work in some cases so
+<span class="ansi-yellow-fg ansi-bold">│ </span>        an explicit `SecondOrder` ADtype is recommended.
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ OptimizationBase C:\Users\metivier\.julia\packages\OptimizationBase\R2xIG\src\cache.jl:51</span>
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>SciMLBase.OptimizationStats
+Number of iterations:                              400
+Time in seconds:                                   405.050000
+Number of function evaluations:                    783
+Number of gradient evaluations:                    783
+Number of hessian evaluations:                     401</code></pre>
+</div>
+</div>
+<p>In this example, Nelder-Mead also fails to converge (producing non positive definite matrices).</p>
+<div id="74" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>(solNoDiff, timeNoDiff) <span class="op">=</span> <span class="pp">@timed</span> <span class="cf">try</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">solve</span>(probσ, <span class="fu">NelderMead</span>(), maxiters<span class="op">=</span>maxiters)</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="cf">catch</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@warn</span> <span class="st">"The solve failed."</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>    (u<span class="op">=</span>[<span class="cn">missing</span>, <span class="cn">missing</span>, <span class="cn">missing</span>], stats<span class="op">=</span><span class="cn">nothing</span>)</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>solNoDiff.stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>The solve failed.
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Main.Notebook C:\Users\metivier\work_David\presentation\2025-12-02_SWG_conference\code\Talk_DM_quarto.qmd:677</span>
+</pre>
+</div>
+</div>
+</div>
+<section id="results-summary-2" class="level3">
+<h3 class="anchored" data-anchor-id="results-summary-2">Results Summary</h3>
+<div id="76" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>results_table <span class="op">=</span> [</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"True"</span> θσ_true[<span class="fl">1</span>] θσ_true[<span class="fl">2</span>] θσ_true[<span class="fl">3</span>] <span class="st">"N/A"</span>;</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"AD"</span> <span class="fu">round</span>(solAD.u[<span class="fl">1</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solAD.u[<span class="fl">2</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solAD.u[<span class="fl">3</span>], digits<span class="op">=</span><span class="fl">3</span>) timeAD;</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"FD"</span> <span class="fu">round</span>(solFD.u[<span class="fl">1</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solFD.u[<span class="fl">2</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solFD.u[<span class="fl">3</span>], digits<span class="op">=</span><span class="fl">3</span>) timeFD;</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"NM"</span> <span class="fu">round</span>(solNoDiff.u[<span class="fl">1</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solNoDiff.u[<span class="fl">2</span>], digits<span class="op">=</span><span class="fl">3</span>) <span class="fu">round</span>(solNoDiff.u[<span class="fl">3</span>], digits<span class="op">=</span><span class="fl">3</span>) timeNoDiff</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a><span class="fu">pretty_table</span>(results_table,</span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>    column_labels<span class="op">=</span>[<span class="st">"Method"</span>, <span class="st">"ρ"</span>, <span class="st">"ν"</span>, <span class="st">"σ"</span>, <span class="st">"Time (s)"</span>], backend<span class="op">=:</span>html)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Method</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">ρ</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">ν</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">σ</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Time (s)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: right;">True</td>
+<td style="text-align: right;">2.5</td>
+<td style="text-align: right;">1.2</td>
+<td style="text-align: right;">4.0</td>
+<td style="text-align: right;">N/A</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: right;">AD</td>
+<td style="text-align: right;">2.508</td>
+<td style="text-align: right;">1.196</td>
+<td style="text-align: right;">3.987</td>
+<td style="text-align: right;">65.4586</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: right;">FD</td>
+<td style="text-align: right;">2.405</td>
+<td style="text-align: right;">1.207</td>
+<td style="text-align: right;">3.87</td>
+<td style="text-align: right;">405.859</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: right;">NM</td>
+<td style="text-align: right;">missing</td>
+<td style="text-align: right;">missing</td>
+<td style="text-align: right;">missing</td>
+<td style="text-align: right;">7.96423</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>To fit a two or three parameter Matérn GRF model to spatial data on a small 2D grid with 700 i.i.d. samples:</p>
+<ul>
+<li><strong>Finite Differences</strong> is extremely slow and may fail to converge within a reasonable time budget. When it converges, the estimates are optimal.</li>
+<li><strong>Gradient-Free</strong> (Nelder-Mead) is faster in this case and accurate for the two-parameter <span class="math inline">\((\rho, \nu)\)</span> case. When adding variance to the estimation, it failed to converge. Note that it does converge when the number of samples is larger.</li>
+<li><strong>Automatic Differentiation</strong> is both fast and converges in both settings.</li>
+</ul>
+<p>This does not mean that AD is always the best choice, but it should be seriously considered when fitting complex SWG models with many parameters.</p>
+</section>
+</section>
+<section id="julia-computer-and-packages-settings" class="level1">
+<h1>Julia, Computer and Packages settings</h1>
+<div id="78" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">InteractiveUtils</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="bu">InteractiveUtils</span>.<span class="fu">versioninfo</span>()</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a><span class="bu">Pkg</span>.<span class="fu">status</span>();</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>Julia Version 1.12.1
+Commit ba1e628ee4 (2025-10-17 13:02 UTC)
+Build Info:
+  Official https://julialang.org release
+Platform Info:
+  OS: Windows (x86_64-w64-mingw32)
+  CPU: 28 × 13th Gen Intel(R) Core(TM) i7-13850HX
+  WORD_SIZE: 64
+  LLVM: libLLVM-18.1.7 (ORCJIT, alderlake)
+  GC: Built with stock GC
+Threads: 28 default, 1 interactive, 28 GC (on 28 virtual cores)
+Environment:
+  JULIA_LOAD_PATH = @;@stdlib
+  JULIA_PROJECT = @.
+<span class="ansi-green-fg ansi-bold">Status</span> `C:\Users\metivier\work_David\presentation\2025-12-02_SWG_conference\code\Project.toml`
+  <span class="ansi-bright-black-fg">[6e4b80f9] </span>BenchmarkTools v1.6.3
+  <span class="ansi-bright-black-fg">[432ab697] </span>BesselK v0.5.7
+  <span class="ansi-bright-black-fg">[a93c6f00] </span>DataFrames v1.8.1
+  <span class="ansi-bright-black-fg">[b4f34e82] </span>Distances v0.10.12
+  <span class="ansi-bright-black-fg">[31c24e10] </span>Distributions v0.25.122
+  <span class="ansi-bright-black-fg">[6a86dc24] </span>FiniteDiff v2.29.0
+  <span class="ansi-bright-black-fg">[f6369f11] </span>ForwardDiff v1.3.0
+  <span class="ansi-bright-black-fg">[e4b2fa32] </span>GaussianRandomFields v2.2.7
+<span class="ansi-green-fg">⌃</span> <span class="ansi-bright-black-fg">[7f7a1694] </span>Optimization v5.1.0
+  <span class="ansi-bright-black-fg">[36348300] </span>OptimizationOptimJL v0.4.8
+  <span class="ansi-bright-black-fg">[08abe8d2] </span>PrettyTables v3.1.2
+  <span class="ansi-bright-black-fg">[6f49c342] </span>RCall v0.14.10
+  <span class="ansi-bright-black-fg">[b77e0a4c] </span>InteractiveUtils v1.11.0
+  <span class="ansi-bright-black-fg">[8f399da3] </span>Libdl v1.11.0
+  <span class="ansi-bright-black-fg">[37e2e46d] </span>LinearAlgebra v1.12.0
+<span class="ansi-cyan-fg ansi-bold">Info</span> Packages marked with <span class="ansi-green-fg">⌃</span> have new versions available and may be upgradable.
+</pre>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
