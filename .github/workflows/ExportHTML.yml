@@ -22,19 +22,23 @@ jobs:
         
       - name: Prepare combined HTML folder
         run: |
-          mkdir -p html
-          # Copy html folder contents to html root
+          mkdir -p html_temp
+          # Copy html folder contents to html_temp root
           if [ -d "html" ]; then
-            cp -r html/* html/
+            cp -r html/* html_temp/
           fi
-          # Copy Bayesian_ODE_fermantation folder to html
+          # Copy Bayesian_ODE_fermantation folder to html_temp
           if [ -d "Bayesian_ODE_fermantation" ]; then
-            cp -r Bayesian_ODE_fermantation html/
+            cp -r Bayesian_ODE_fermantation html_temp/
           fi
-          # Copy SWG_coding_challenges folder to html
+          # Copy SWG_coding_challenges folder to html_temp
           if [ -d "SWG_coding_challenges" ]; then
-            cp -r SWG_coding_challenges html/
+            cp -r SWG_coding_challenges html_temp/
           fi
+          # Move to html folder
+          rm -rf html_old
+          mv html html_old
+          mv html_temp html
         
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
