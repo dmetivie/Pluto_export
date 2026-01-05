@@ -8,6 +8,7 @@ on:
       - 'html/**'
       - 'Bayesian_ODE_fermantation/**'
       - 'SWG_coding_challenges/**'
+      - 'quarto/**'
   workflow_dispatch:
 
 permissions:
@@ -34,6 +35,14 @@ jobs:
           # Copy SWG_coding_challenges folder to html_temp
           if [ -d "SWG_coding_challenges" ]; then
             cp -r SWG_coding_challenges html_temp/
+          fi
+          # Copy all quarto subfolders to html_temp
+          if [ -d "quarto" ]; then
+            for folder in quarto/*/; do
+              if [ -d "$folder" ]; then
+                cp -r "$folder" html_temp/
+              fi
+            done
           fi
           # Move to html folder
           rm -rf html_old
