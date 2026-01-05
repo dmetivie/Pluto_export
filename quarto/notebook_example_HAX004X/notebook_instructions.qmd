@@ -1,0 +1,228 @@
+---
+title: "Notebook Instructions for M2 SSD HAX004X Dirty Data"
+author: "David Métivier"
+date: last-modified
+format:
+    html:
+        toc: true
+engine: julia
+---
+
+In this course, you will learn about statistical methods for ``dirty data''. 
+At the end of each lecture, you will be given a small assignment. 
+The goal will be for you to 
+
+- Manipulate real datasets with missing values, outliers, or other imperfections.
+- Apply the statistical methods covered in the lecture and/or try your own to analyze the data.
+- Produce a simple scientific report documenting your work.
+
+You will return Quarto notebooks (`.qmd` + rendered `.html`) containing your code, results, plots, and explanations.
+
+::: {.callout-important}
+Manipulating data frames is a key skill for data analysis and data science. 
+You must know how to do it in your language of choice (R, Julia, Python, etc.).
+Transforming data, filtering rows, grouping by categories, and summarizing statistics are common tasks.
+:::
+
+# Instructions for Quarto notebooks report
+
+Quarto notebooks allow you to combine code, results, plots, and narrative text in a single document.
+It supports multiple programming languages, including Julia and R.
+
+## Quarto Installation
+
+Go to [https://quarto.org/docs/get-started/](https://quarto.org/docs/get-started/) to install Quarto on your system.
+
+It can be used within VSCode with the Quarto extension installed and RStudio & Jupyter (I did not test these options).
+
+::: {.callout-warning}
+## Update!
+
+If you have already Quarto installed, make sure to update to the latest version to ensure compatibility with all features.
+:::
+
+## Guidelines for your notebook report
+
+To create your notebook report, follow these steps:
+
+- Create a new Quarto notebook file -> just create a file with the extension `.qmd`.
+- Fill the yaml header with your name and date as shown above.
+- Use Markdown (e.g., headings, lists) to explain your code and results.
+- Use code chunks to include your Julia and/or R code.
+- Add plots and tables as needed to illustrate your findings.
+- Render the notebook to HTML using Quarto. The output file should be named `notebook_yourname1_yourname2_CMX.html` and Quarto `notebook_yourname1_yourname2_CMX.qmd` where X is the course number when the exercise was given.
+- Submit both the `.qmd` and the rendered `.html` files (with the folder) on Moodle.
+
+# Julia 
+
+## Installation
+
+Details can be found at [https://julialang.org/downloads/](https://julialang.org/downloads/) but here are quick instructions.
+The following will 
+
+- install `juliaup` 
+- install the latest stable Julia version
+- add Julia to your system path
+
+::: {.callout-warning}
+## Update!
+
+If you have already Julia installed, make sure to install it with the following procedure and update to the latest version to ensure compatibility with all features.
+:::
+
+### Windows
+
+With the Windows store app:
+<iframe src="https://apps.microsoft.com/detail/9njnww8pvkmn?hl=fr-FR&gl=FR" style="
+                width: 100%;
+            ">
+</iframe>
+
+or directly
+```{sh}
+winget install --name Julia --id 9NJNWW8PVKMN -e -s msstore
+```
+
+### macOS & Linux
+
+Just run the following in your terminal:
+```{sh}
+curl -fsSL https://install.julialang.org | sh
+```
+
+## Starting Julia
+
+You can start Julia from your terminal by typing `julia`. You can also use Julia within VSCode with the Julia extension installed.
+
+Here are some useful links to get started with Julia (watch out, some tutorials on internet may be outdated):
+
+- [Official Julia Documentation](https://docs.julialang.org/): very comprehensive and well-maintained but might not be the best to begin.
+- [Introduction to Julia for R users](https://nrennie.rbind.io/blog/introduction-julia-r-users/). It is not perfect (from a Julia perspective) but a good start if you know R.
+- [Modern Julia Workflows](https://modernjuliaworkflows.org/): quite complete and up-to-date introduction to Julia programming and ecosystem. (But not a real tutorial)
+
+:::{.callout-tip}
+## Package Environment
+
+To make your code reproducible, it is important to manage package versions properly. **It is true for every programming language.**
+
+In Julia, the project environment = package names + versions and dependence is defined in the `Project.toml` and `Manifest.toml` files in this folder.
+
+In R, I am not sure how to manage environments properly.
+:::
+
+To activate the environment defined in this folder, run the following code chunk at the beginning of your Julia notebook (it is not mandatory but recommended):
+
+```{julia}
+cd(@__DIR__) # cd in notebook folder
+import Pkg
+Pkg.activate("."); # activate the environment in this folder
+```
+
+## Using R from Julia
+
+::: {.callout-tip}
+## Using R, Python and C from Julia
+
+Using packages such as `RCall.jl` and `PythonCall.jl`, Julia can seamlessly call R and Python code from within Julia scripts or notebooks.
+C code can be compiled into shared libraries and called using Julia's `ccall` interface.
+:::
+
+```{julia}
+# import PythonCall #if you want to test Python version
+import RCall
+```
+
+See for example [this notebook](https://dmetivie.github.io/Pluto_export/SWG_coding_challenges/Talk_DM_quarto.html) using R and Julia (and C) together with speed comparison for a Hidden Markov Model.
+
+# Example with Julia and weather data
+
+Here is a tiny example of data (coming from a Montpellier weather station) manipulation using [DataFrames.jl](https://dataframes.juliadata.org/stable/) and [DataFramesMeta.jl](https://juliadata.github.io/DataFramesMeta.jl/stable/) packages in Julia.
+
+::: {.callout-tip}
+## Data manipulation in Julia
+Here we use `DataFramesMeta.jl` which provides a convenient syntax for data manipulation. 
+To get something very similar to the **tidyverse syntax** in R check out the [`Tidier.jl`](https://github.com/TidierOrg) ecosystem with [TidierData.jl](https://github.com/TidierOrg/TidierData.jl) for data manipulation.
+:::
+
+## Loading packages
+
+```{julia}
+using DataFrames, CSV, Downloads, Dates
+using DataFramesMeta, StatsBase
+```
+
+## Loading data
+
+The file contains daily weather data from a weather station in Montpellier (France).
+```{julia}
+url = "https://raw.githubusercontent.com/dmetivie/StochasticWeatherGenerator.jl/master/weather_files/TX_STAID002207.txt"
+http_response = Downloads.download(url) # download file from a GitHub repo
+df = CSV.read(http_response, DataFrame; normalizenames=true, dateformat="yyyymmdd", types=Dict(:DATE => Date), header=21)
+df[1:20, :] # show first 20 rows
+```
+
+## Monthly mean and standard deviation of daily temperature
+
+```{julia}
+factor = 0.1 # to convert from tenths of °C to °C
+df_month = @chain df begin
+    @subset(:Q_TX .!= 9) # remove missing 
+    @transform(:MONTH = month.(:DATE)) # add month column
+    @by(:MONTH, :MONTHLY_MEAN = mean(:TX) * factor, :MONTHLY_STD = std(:TX) * factor) # groupby MONTH + takes the mean/std in each category 
+end
+```
+
+
+Plotting with `CairoMakie.jl` package:
+```{julia}
+using CairoMakie
+```
+
+::: {.callout-tip}
+## Plotting in Julia
+
+In Julia, several plotting packages are available, such as `Plots.jl`, `Makie.jl`. Each support various backends for static or interactive plots.
+`CairoMakie.jl` provides high-quality static plots.
+
+For ggplot2-like plotting in Julia, you can use the [`TidierPlots.jl`](https://github.com/TidierOrg/TidierPlots.jl) package, which offers a grammar of graphics approach with a syntax very close to ggplot2 in R.
+:::
+
+```{julia}
+fig = Figure()
+ax = Axis(fig[1, 1]; xlabel="Month", title="Monthly mean daily temperature in Montpellier", ylabel="T(°C)", xticks=(1:12, monthabbr.(1:12)))
+lines!(ax, 1:12, df_month.MONTHLY_MEAN, label="Mean Temperature")
+band!(ax, 1:12, df_month.MONTHLY_MEAN .- df_month.MONTHLY_STD, df_month.MONTHLY_MEAN .+ df_month.MONTHLY_STD, color=(:blue, 0.3), label="±1 Std Dev")
+axislegend(ax; position=:rt)
+fig
+```
+
+## Global warming trend
+
+Here we consider the yearly mean temperature and a simple linear trend to illustrate the global warming trend.
+
+```{julia}
+df_trend = @chain df begin
+    @subset(:Q_TX .!= 9) # remove missing 
+    @transform(:YEAR = year.(:DATE)) # add year column
+    @subset(:YEAR .< 2025) # The data stops in July 2025.
+    @by(:YEAR, :YEARLY_MEAN = mean(:TX) * factor) # groupby YEAR
+end;
+```
+
+For illustration, we consider a simple linear trend fitted "by hand".
+Of course one could use optimization to select the yearly offset and slope as well as considering other forms of trend.
+
+```{julia}
+f_trend(x) = 19 + 0.05 * ifelse(x < 1980, 0, x - 1980) # i.e. ≃2°C warming in 40 years in Montpellier
+```
+
+```{julia}
+begin
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel="Year", title="Global warming trend in Montpellier", ylabel="T(°C)")
+    lines!(ax, df_trend.YEAR, df_trend.YEARLY_MEAN, label="Yearly mean temperature trend")
+    lines!(ax, df_trend.YEAR, f_trend.(df_trend.YEAR), label="Linear warming trend")
+    axislegend(ax; position=:rt)
+    fig
+end
+```
